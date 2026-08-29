@@ -4,186 +4,62 @@
 
 ## 📖 Overview
 
-This notebook moves from understanding how neural networks learn to actually **building and training a neural network with TensorFlow/Keras**.
-
-Today focuses on the practical Keras workflow: building a model with the Sequential API, compiling it with the appropriate optimizer and loss function, training it, reading its training history, diagnosing the fit, and evaluating it on unseen test data.
-
-The notebook also introduces **Batch Normalization and Dropout** as practical techniques for stabilizing training and reducing overfitting.
+This notebook builds and trains the first real neural network for the Fraud Detection project using the Keras Sequential API, moving from the manual forward-pass math of Days 1-3 to a framework that handles forward propagation, backpropagation, and optimization automatically.
 
 ## 🎯 Learning Objectives
 
-By the end of today, I am able to:
-
-- Build a neural network using the Keras Sequential API.
-- Compile, train, and evaluate a neural network.
-- Read and interpret the training history.
-- Diagnose training and validation loss/accuracy curves.
-- Apply Batch Normalization and Dropout to a neural network.
-- Compare neural-network performance with the Day 1 baseline.
+- Build a neural network with the Keras Sequential API.
+- Compile, train, and evaluate the network, and read its training history.
+- Apply batch normalization and dropout to stabilize training and reduce overfitting.
 
 ## 📌 Topics Covered
 
-- TensorFlow / Keras as a high-level deep-learning framework
-- The Keras Sequential API
-- Dense layers and network architecture
-- `compile()` / `fit()` / `evaluate()` workflow
-- Adam optimizer
-- Binary Cross-Entropy loss
-- Training and validation history
-- Training vs. validation loss
-- Training vs. validation accuracy
-- Batch Normalization
-- Dropout
-- Test-set evaluation
-- Comparison with the Day 1 baseline
+- TensorFlow/Keras as the high-level framework
+- The Sequential API and Dense layers
+- Compile / fit / evaluate workflow
+- Reading the training history (loss curves)
+- Batch normalization and dropout
 
 ## 📊 Dataset
 
-Same **Kaggle Credit Card Fraud Detection Dataset** used throughout the Phase 3 project — the real fraud-detection dataset with **284,807 transactions** and `Class` as the binary target.
-
-- `Class = 0` → normal transaction
-- `Class = 1` → fraudulent transaction
-
-The notebook keeps the same project dataset context and applies a leakage-aware train/validation/test split before scaling the features.
-
-Because fraud detection is a highly imbalanced classification problem, the notebook reports not only accuracy but also **ROC-AUC and PR-AUC** when evaluating the models.
+Same **Kaggle Credit Card Fraud Detection Dataset** used on Days 1-3 (284,807 transactions, `Class` target), loaded via the same local-file-first/Google Drive-fallback pattern, with the same duplicate-removal step applied for consistency across the sprint.
 
 ## 🖥️ Hands-On Lab: Training a Neural Network
 
-### Step 1 — Build a Keras Sequential Network
-
-Built a binary-classification neural network using the Keras Sequential API:
-
-- Dense layer with 64 neurons + ReLU
-- Dense layer with 32 neurons + ReLU
-- Output layer with 1 neuron + Sigmoid
-
-The Sigmoid output is appropriate because the Phase 3 project is a binary classification task.
-
-### Step 2 — Compile and Train
-
-Compiled the network with:
-
-- **Adam** optimizer
-- **Binary Cross-Entropy** loss
-- **Accuracy** metric
-- **30 epochs**
-- **Batch size = 32**
-
-The model was trained using the training set while monitoring validation performance.
-
-### Step 3 — Analyze the Training History
-
-Used the Keras `History` object to examine:
-
-- Training loss vs. validation loss
-- Training accuracy vs. validation accuracy
-
-The curves provide evidence for diagnosing whether the model is learning effectively, underfitting, or showing signs of overfitting.
-
-### Step 4 — Add Batch Normalization and Dropout
-
-Built a second version of the network using:
-
-- `BatchNormalization()`
-- `Dropout(0.30)`
-
-The new model was trained under the same general conditions so its validation curves could be compared directly with the original network.
-
-### Step 5 — Evaluate on the Test Set
-
-Evaluated both neural networks on the held-out test set and compared them with the **Day 1 Logistic Regression baseline**.
-
-The comparison uses:
-
-- Accuracy
-- ROC-AUC
-- PR-AUC
-- Test loss
+1. Built a Keras Sequential network with the correct output layer (sigmoid) and loss (binary cross-entropy) for this project's binary classification task.
+2. Compiled with Adam and trained with a validation split for 30 epochs.
+3. Plotted training vs. validation loss and accuracy from the `history` object and diagnosed the fit.
+4. Added dropout and batch normalization and compared the new loss curves to the previous run.
+5. Evaluated on the test set and compared the score to the Day 1 baseline.
 
 ## 🔑 Key Findings
 
-- The Keras workflow turns the concepts from Day 3 into an actual trainable neural network: **build → compile → fit → evaluate**.
-- For this fraud-detection task, the correct output configuration is a **single Sigmoid neuron** with **Binary Cross-Entropy** loss because the target is binary.
-- The training history provides more useful evidence than a single final score because it shows how training and validation performance change across epochs.
-- Batch Normalization and Dropout provide a practical way to modify the network and investigate whether regularization improves validation behavior.
-- Because the dataset is highly imbalanced, **accuracy alone is not sufficient** for judging the fraud-detection model. ROC-AUC and PR-AUC are included to provide a more informative comparison.
-- The final model comparison is based on the actual validation curves and held-out test-set metrics rather than assuming that the more complex model must perform better.
+- **Original network (30 epochs):** best validation loss 0.0038, best validation accuracy 99.93%.
+- **BatchNorm + Dropout network (30 epochs):** best validation loss 0.0042, best validation accuracy 99.93% — comparable validation performance to the original, with the regularization expected to generalize more reliably to unseen data.
 
-## 🛡️ Data Quality & Leakage Checks
+- **Final test-set comparison:**
 
-Several checks were included before and after training:
+  | Model | Accuracy | ROC-AUC | PR-AUC |
+  |---|---|---|---|
+  | Day 1 Logistic Regression (baseline) | 0.9787 | **0.9680** | 0.7929 |
+  | Day 4 Original NN | 0.9993 | 0.9283 | 0.7843 |
+  | **Day 4 BatchNorm + Dropout NN** | **0.9995** | 0.9587 | **0.8145** |
 
-- Missing-value check
-- Infinite-value check
-- Target/feature separation
-- Verification that `Class` is not included as an input feature
-- Stratified train/validation/test splitting
-- Verification that the three splits contain no overlapping rows
-- Feature scaling fitted only on the training data
-- Numerical finiteness checks after scaling
-- Reproducibility through fixed random seeds
-
-These checks help ensure that the neural-network results are based on a clean and leakage-aware workflow.
+- **Honest verdict:** the regularized neural network won on Accuracy and PR-AUC (the metric that matters most here, given the severe 0.17% fraud rate), improving PR-AUC from 0.7929 to 0.8145. However, **neither neural network beat the simple Logistic Regression baseline on ROC-AUC** (0.9680 vs. 0.9587) — a result worth reporting honestly rather than hiding: more model complexity did not win on every metric.
+- Adding BatchNorm + Dropout clearly helped relative to the plain network: every one of its test metrics improved over the original network's.
 
 ## 🛠 Tools Used
 
-TensorFlow / Keras • NumPy • Pandas • Matplotlib • Scikit-learn • Jupyter/Colab
+TensorFlow/Keras • Matplotlib • Pandas • NumPy • Jupyter/Colab (GPU)
 
 ## 📤 GitHub Submission
 
-Notebook submitted as part of the Phase 3 Sprint 1 project under the Day 4 section of the Fraud Detection Capstone.
-
-The notebook is structured as a GitHub portfolio artifact, with:
-
-- Clear Markdown explanations
-- Executable code
-- Visualizations
-- Data-quality checks
-- Model comparisons
-- Objective → Evidence mapping
-- Reflection
-- Beyond-the-Requirement analysis
+Notebook and README committed to `Fraud-Detection-Capstone`, under `notebooks/Sprint1/Day4/`, on `main`.
 
 ## 💭 Reflection
 
-Day 4 was the point where the theoretical training mechanics from Day 3 became an actual neural-network implementation.
-
-Instead of manually thinking through every forward pass, gradient, and weight update, Keras provides a high-level interface that handles those operations while still allowing me to control the architecture, optimizer, loss function, training process, and regularization.
-
-The training curves were especially useful because they showed that evaluating a neural network is not just about looking at the final accuracy. Watching training and validation behavior across epochs gives much stronger evidence about whether the model is learning appropriately or starting to overfit.
-
-Adding Batch Normalization and Dropout also connected the neural-network workflow back to the regularization concepts covered earlier in the internship.
-
-## 🚀 Beyond the Requirement
-
-The basic requirement focuses on training and evaluating a Keras network.
-
-To make the notebook stronger for the Fraud Detection project, the analysis goes beyond accuracy by including **ROC-AUC and PR-AUC**, together with leakage checks, reproducibility, validation-curve comparisons, and a direct comparison against the Day 1 baseline.
-
-This makes the model evaluation more appropriate for an imbalanced fraud-detection problem rather than treating accuracy as the only measure of success.
-
-## 🔬 Objective → Evidence Mapping
-
-| Objective | Evidence |
-|---|---|
-| Build a Keras Sequential network | Dense-based Sequential architecture |
-| Choose the correct output layer | Sigmoid output for binary classification |
-| Compile the network | Adam + Binary Cross-Entropy |
-| Train the network | 30-epoch training run with validation data |
-| Read training history | History DataFrame and learning curves |
-| Diagnose the fit | Training/validation loss and accuracy comparison |
-| Apply regularization | Batch Normalization + Dropout |
-| Evaluate the model | Held-out test-set evaluation |
-| Compare with previous work | Day 1 baseline comparison |
-| Maintain reproducibility | Fixed random seeds + sanity checks |
+Building this network in Keras made the shift from Day 1-3's manual forward-pass calculations to a production-style workflow concrete: `compile()`, `fit()`, and `evaluate()` mirror the same three-step discipline as Scikit-learn's API from Week 3, just applied to a model that learns its own internal representations. The most important lesson wasn't a win — it was that the neural network didn't beat the baseline on every metric, and reporting that honestly matters more than making the result look uniformly better than it was.
 
 ## ✅ Conclusion
 
-Today moved the Phase 3 project from understanding **how neural networks learn** to actually **building and training one**.
-
-The Keras Sequential API made it possible to translate the architecture into a practical model, while the training history and validation curves provided evidence for diagnosing its behavior.
-
-The addition of Batch Normalization and Dropout introduced practical regularization techniques, and the final test-set comparison connected the new neural network directly to the **Day 1 baseline**.
-
-With the first Keras network successfully implemented and evaluated, **Day 5 can build on this foundation by focusing on improving and tuning the neural-network model rather than starting from scratch.**
+Today produced the project's first trained neural network, evaluated fairly against the Day 1 baseline. The regularized version improved on PR-AUC and accuracy but not ROC-AUC — a genuinely mixed result that sets up Day 5's tuning work with a clear, honest target to improve on.
