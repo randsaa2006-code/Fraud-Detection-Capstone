@@ -6,3 +6,4 @@ jupyter
 joblib
 scikit-learn
 streamlit
+tensorflow
