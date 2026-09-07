@@ -1,57 +1,90 @@
-# 🚀 Sprint 4 — Final Model, Deployment & Portfolio
+# 🕵️ Credit Card Fraud Detection — ML Capstone Project
 
-**Fraud Detection Capstone**
+An end-to-end machine learning project detecting fraudulent credit card transactions, built independently across four sprints: from raw data to a deployed, explainable model.
 
-## 📖 Sprint Overview
+**🌐 Live app:** [fraud-detection.streamlit.app](https://fraud-detection.streamlit.app/)
 
-Sprint 4 closes out the project: pick the final model, run a clean end-to-end pipeline, and ship a working deployment.
+## 📖 Project Overview
 
-## 📓 Notebooks & Deliverables
+This project tackles **binary, highly imbalanced classification** — identifying fraudulent transactions in a dataset where fraud accounts for a tiny fraction of activity (~0.17%). The work goes from exploratory analysis through a tuned, explainable neural network to a working public deployment.
 
-| # | Notebook / Folder | Focus | Status |
-|---|---|---|---|
-| 1 | [`01_final_model_selection_evaluation.ipynb`](./01_final_model_selection_evaluation.ipynb) | Compared Sprint 1/2/3 models on the same test set, each at its intended threshold; selected the Sprint 3 tuned model | ✅ Done |
-| 2 | [`02_final_training_pipeline.ipynb`](./02_final_training_pipeline.ipynb) | Single reproducible script: raw `creditcard.csv` → `models/final_model.keras` + `models/final_scaler.joblib` | ✅ Done |
-| 3 | [`03_deployment/`](./03_deployment) | Streamlit app (`streamlit_app.py`) serving the final model | ✅ Built, runs locally — not yet deployed to a public URL |
+**Dataset:** [Kaggle Credit Card Fraud Detection](https://www.kaggle.com/mlg-ulb/creditcardfraud) — this project uses a **30,000-row sample** (52 fraud cases, same ~0.17% fraud rate as the full 284,807-row dataset). Features `Time`, `V1`–`V28` (PCA-anonymized), `Amount`, target `Class`.
 
-## 🏁 Definition of Done (Sprint 4)
+## 🏁 Definition of Done
 
-- [x] Final model selected with a clear, evidence-based justification
-- [x] Clean training pipeline that reproduces the final model from raw data
-- [x] Model artifact saved (`models/final_model.keras`, `models/final_scaler.joblib`)
-- [x] Deployment app built and smoke-tested locally
-- [ ] Deployed at a public URL (Streamlit Community Cloud — free, see below)
-- [ ] Root `README.md` finalized with full results summary
-- [ ] Short technical write-up (approach, results, limitations)
+- [x] Clean, documented notebooks covering EDA → preprocessing → modeling → evaluation
+- [x] Trained baseline model with reported metrics
+- [x] Trained, tuned final model with reported metrics
+- [x] Model explainability (SHAP)
+- [x] Working deployment at a public URL
+- [x] Repo with README, `requirements.txt`, and model artifacts
+- [ ] Short technical write-up *(next up)*
 
-## 📊 Final Model Results (Test Set)
+## 🗺️ Project Structure & Results
 
-| Metric | Value |
-|---|---|
-| Precision | 0.700 |
-| Recall | 0.875 |
-| F1 | 0.778 |
-| AUC-PR | 0.764 |
-| Threshold | 0.93 |
+| Sprint | Focus | Key Result |
+|---|---|---|
+| [Sprint 1](./sprint1) — Data Understanding & ML Baseline | EDA, preprocessing, baseline models | Dense NN: precision=1.00, recall=0.625, F1=0.769 |
+| [Sprint 2](./sprint2) — Deep Learning & Advanced Modelling | Deeper regularized architecture (BatchNorm + Dropout) | Improved architecture, validated against Sprint 1 |
+| [Sprint 3](./sprint3) — Imbalance, Tuning & Explainability | Class weighting vs. SMOTE, threshold tuning, SHAP | Tuned model + threshold=0.93, SHAP explainability |
+| [Sprint 4](./sprint4) — Final Model, Deployment & Portfolio | Final selection, consolidated pipeline, Streamlit app | **Final test set: precision=0.636, recall=0.875, F1=0.737** |
 
-Trained on the **full uploaded dataset (30,000 rows, 52 fraud cases)** via the consolidated pipeline in notebook 02 — these numbers are more realistic than some of the near-perfect Sprint 3 numbers, since this run reflects the final, complete pipeline end-to-end on the held-out test set.
+Each sprint folder has its own README with full details, notebooks, and evidence.
 
-## 🌐 Deploying to a Public URL (Next Step)
+## 📊 Final Model
 
-1. Push this repo to GitHub (including `models/final_model.keras` and `models/final_scaler.joblib` — small enough to commit directly, or use Git LFS if needed)
-2. Go to [share.streamlit.io](https://share.streamlit.io), connect your GitHub account
-3. Point it at `sprint4/03_deployment/streamlit_app.py`, using `requirements.txt` in the same folder
-4. Deploy — you'll get a public `*.streamlit.app` URL to put in the root README
+- **Architecture:** Dense neural network (64→32→16→1) with Batch Normalization + Dropout, trained with class weighting
+- **Threshold:** 0.93 (chosen by maximizing F1 on validation data — see Sprint 3)
+- **Test set performance:** precision=0.636, recall=0.875, F1=0.737, AUC-PR=0.696
+- **Explainability:** SHAP (global feature importance + individual-prediction breakdowns) — see Sprint 3
 
-## 🧭 Key Decisions
+**Reading these numbers honestly:** recall (0.875) matters most here — the model catches most real fraud — at the cost of some false positives (lower precision). In a real deployment, the threshold would be set based on the actual business cost of a missed fraud vs. a false alarm, not just maximized F1.
 
-- Deployment app takes `Amount`, `Time`, and `V1`–`V28` as direct inputs (matching the dataset's real feature set) rather than a simplified fake schema — so it can be tested against real dataset rows.
-- Kept the deployment scope intentionally minimal (single-prediction form) rather than building batch upload or a dashboard — a working simple app beats an ambitious broken one under a tight timeline.
+## 🛠 Tech Stack
 
-## ⚠️ Known Limitation (carried from Sprints 1–3)
+Python • Pandas • NumPy • Scikit-learn • Imbalanced-learn (SMOTE) • TensorFlow/Keras • SHAP • Matplotlib/Seaborn • Streamlit • Jupyter
 
-All results across this project come from a **30,000-row sample** of the full 284,807-row Kaggle dataset. Re-running Sprints 1–4 on the full dataset is recommended before finalizing the technical write-up.
+## 📂 Repository Structure
 
-## 💭 Status
+```
+├── README.md                  ← you are here
+├── sprint1/                   Data Understanding & ML Baseline
+├── sprint2/                   Deep Learning & Advanced Modelling
+├── sprint3/                   Imbalance, Tuning & Explainability
+└── sprint4/                   Final Model, Deployment & Portfolio
+    ├── models/
+    │   ├── final_model.keras
+    │   └── final_scaler.joblib
+    └── 03_deployment/
+        ├── streamlit_app.py
+        ├── requirements.txt
+        └── runtime.txt
+```
 
-**Sprint 4: Model, pipeline, and app complete. Remaining: public deployment, final README, and write-up.**
+## 🚀 Running Locally
+
+```bash
+git clone <this-repo-url>
+cd <repo-name>
+
+# Download creditcard.csv from Kaggle and place it at sprint1/data/creditcard.csv
+# (not committed to this repo — see Kaggle link above)
+
+cd sprint4/03_deployment
+pip install -r requirements.txt
+streamlit run streamlit_app.py
+```
+
+## ⚠️ Known Limitations
+
+- All results come from a **30,000-row sample**, not the full 284,807-row dataset. Trends and methodology hold, but exact metrics would shift somewhat on the full data.
+- The classification threshold (0.93) was optimized for F1 on validation data as a principled default — a real deployment should set it from the actual cost of false positives vs. false negatives.
+- The Streamlit app takes `V1`–`V28` as direct numeric input, since they're anonymized PCA components with no natural user-facing meaning — realistic for a portfolio demo, not for a production fraud system (which would compute these upstream).
+
+## 🧭 Notable Engineering Decision
+
+A real bug was found and fixed during development: an engineered feature (`Amount_log`, a log-transform of transaction amount) was initially computed *after* scaling `Amount` — since standardized values can be negative, this broke the log transform. Fixed by reordering feature engineering to run on raw values before scaling. Documented here rather than quietly patched, since catching this kind of thing is part of the actual work.
+
+## 📝 About This Project
+
+Originally started as part of an AI/ML internship's Phase 3 capstone; completed independently after the program ended, with the project restructured around clear pipeline stages rather than daily training exercises.
